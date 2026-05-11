@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Intelligence Dashboard - NSE & BSE</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-logo">Stock Intelligence Dashboard</h1>
+            <div class="nav-menu">
+                <button type="button" class="nav-link active" data-view="dashboard">Dashboard</button>
+                <button type="button" class="nav-link" data-view="about">About</button>
+                <div class="auth-controls">
+                    <select id="exchange-select" class="toolbar-select" style="margin-right: 10px;">
+                        <option value="nse">NSE (India)</option>
+                        <option value="bse">BSE (India)</option>
+                        <option value="both">NSE & BSE</option>
+                    </select>
+                    <span id="auth-status" class="auth-status">Guest session</span>
+                    <button type="button" id="login-btn" class="btn-secondary">Login</button>
+                    <button type="button" id="signup-btn" class="btn-secondary">Create Account</button>
+                    <button type="button" id="forgot-btn" class="btn-secondary">Forgot Password</button>
+                    <button type="button" id="logout-btn" class="btn-logout hidden">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section id="dashboard" class="page-section">
+            <div class="dashboard-header">
+                <div>
+                    <h2>Real-Time Market Intelligence</h2>
+                    <p class="subtle-text">Multi-exchange stock analysis with AI-powered insights. Search, compare, and track market trends in real-time.</p>
+                </div>
+                <div class="refresh-info">
+                    <small>Last updated: <span id="last-updated">Loading...</span></small>
+                    <span id="api-status" class="status-pill">Checking API...</span>
+                    <button type="button" id="refresh-btn" class="btn-refresh">Refresh Market</button>
+                </div>
+            </div>
+
+            <div id="page-message" class="page-message hidden"></div>
+
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3>Top Ranked Stocks</h3>
+                    <div id="top-stocks" class="stocks-list">
+                        <div class="loading">Loading top stocks...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Score Distribution</h3>
+                    <div class="chart-shell">
+                        <canvas id="scoreChart" aria-label="Stock score chart"></canvas>
+                        <div id="chart-fallback" class="chart-fallback hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid secondary-grid">
+                <div class="card insight-panel">
+                    <h3>AI Insights</h3>
+                    <div id="ai-insights" class="insights-content">
+                        <div class="loading">Loading insights...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Model And Market Summary</h3>
+                    <div id="market-summary" class="summary-panel">
+                        <div class="loading">Building ranking summary...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="parallel-views">
+                <div class="market-view">
+                    <div class="card">
+                        <div class="market-toolbar">
+                            <div>
+                                <h3>Whole Market View</h3>
+                                <p class="subtle-text">Search by symbol or company name and page through the stored market list.</p>
+                            </div>
+                            <div class="toolbar-controls">
+                                <input id="search-input" class="search-input" type="search" placeholder="Search stock or company">
+                                <select id="sort-select" class="toolbar-select">
+                                    <option value="score">Sort by Score</option>
+                                    <option value="prediction">Sort by Prediction</option>
+                                    <option value="confidence">Sort by Confidence</option>
+                                    <option value="change">Sort by Change</option>
+                                    <option value="symbol">Sort by Symbol</option>
+                                </select>
+                                <select id="page-size-select" class="toolbar-select">
+                                    <option value="25">25 rows</option>
+                                    <option value="50" selected>50 rows</option>
+                                    <option value="100">100 rows</option>
+                                    <option value="200">200 rows</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <table class="stocks-table" id="stocks-table">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Score</th>
+                                    <th>Prediction</th>
+                                    <th>Sentiment</th>
+                                    <th>Price Change</th>
+                                    <th>Current Price</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pager">
+                            <button type="button" id="prev-page-btn" class="btn-secondary">Previous</button>
+                            <span id="pager-status" class="subtle-text">Page 1</span>
+                            <button type="button" id="next-page-btn" class="btn-secondary">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stock-view">
+                    <div class="card">
+                        <h3>Selected Stock</h3>
+                        <div id="selected-stock" class="stock-detail-panel">
+                            <p class="subtle-text">Choose a stock to see more details.</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Historical Comparison</h3>
+                        <p class="subtle-text">Compare saved snapshot scores over time.</p>
+                        <div class="chart-shell comparison-shell">
+                            <canvas id="comparisonChart" aria-label="Historical stock comparison chart"></canvas>
+                            <div id="comparison-fallback" class="chart-fallback hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="page-section hidden">
+            <div class="card">
+                <h2>About NSE Stock Intelligence</h2>
+                <p>
+                    This project combines a Go API, Python scoring logic, SQLite storage, multi-source quote collection,
+                    and a lightweight dashboard to surface live market signals and explainable rankings.
+                </p>
+                <h3>Features</h3>
+                <ul>
+                    <li>Whole-market style browsing from the stored stock universe</li>
+                    <li>Search, pagination, ranking, and comparison charts</li>
+                    <li>Market-wide retraining on every refresh</li>
+                    <li>Explainable ranking and optional GPT-enhanced reasoning</li>
+                    <li>Saved SQLite snapshots for every refresh cycle</li>
+                </ul>
+                <p class="disclaimer">
+                    <strong>Disclaimer:</strong> This is AI based decision support and not financial advice.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 NSE Stock Intelligence. All rights reserved.</p>
+    </footer>
+
+    <div id="auth-modal" class="auth-modal hidden">
+        <div class="auth-dialog">
+            <div class="auth-dialog-header">
+                <h3 id="auth-modal-title">Login</h3>
+                <button type="button" id="auth-close-btn" class="auth-close-btn">Close</button>
+            </div>
+            <div id="auth-feedback" class="auth-feedback hidden"></div>
+
+            <form id="login-form" class="auth-form">
+                <label class="auth-field">
+                    <span>Username or Email</span>
+                    <input id="login-identifier" type="text" autocomplete="username" required>
+                </label>
+                <label class="auth-field">
+                    <span>Password</span>
+                    <input id="login-password" type="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit" class="btn-refresh auth-submit">Login</button>
+            </form>
+
+            <form id="signup-form" class="auth-form hidden">
+                <label class="auth-field">
+                    <span>Username</span>
+                    <input id="signup-username" type="text" autocomplete="username" required>
+                </label>
+                <label class="auth-field">
+                    <span>Email</span>
+                    <input id="signup-email" type="email" autocomplete="email" required>
+                </label>
+                <label class="auth-field">
+                    <span>Password</span>
+                    <input id="signup-password" type="password" autocomplete="new-password" required>
+                </label>
+                <button type="submit" class="btn-refresh auth-submit">Create Account</button>
+            </form>
+
+            <form id="forgot-form" class="auth-form hidden">
+                <label class="auth-field">
+                    <span>Username or Email</span>
+                    <input id="forgot-identifier" type="text" autocomplete="username" required>
+                </label>
+                <button type="submit" class="btn-refresh auth-submit">Send Reset Code</button>
+            </form>
+
+            <form id="reset-form" class="auth-form hidden">
+                <label class="auth-field">
+                    <span>Username or Email</span>
+                    <input id="reset-identifier" type="text" autocomplete="username" required>
+                </label>
+                <label class="auth-field">
+                    <span>Reset Code</span>
+                    <input id="reset-code" type="text" required>
+                </label>
+                <label class="auth-field">
+                    <span>New Password</span>
+                    <input id="reset-password" type="password" autocomplete="new-password" required>
+                </label>
+                <button type="submit" class="btn-refresh auth-submit">Reset Password</button>
+            </form>
+
+            <div class="auth-switches">
+                <button type="button" class="auth-switch-btn" data-auth-view="login">Login</button>
+                <button type="button" class="auth-switch-btn" data-auth-view="signup">Create Account</button>
+                <button type="button" class="auth-switch-btn" data-auth-view="forgot">Forgot Password</button>
+                <button type="button" class="auth-switch-btn" data-auth-view="reset">Reset Password</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/dashboard.js"></script>
+</body>
+</html>

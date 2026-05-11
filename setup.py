@@ -1,0 +1,24 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="nse-agentic-intelligence",
+    version="0.1.0",
+    description="AI-driven NSE stock recommendation system",
+    author="Stock Intelligence Team",
+    author_email="team@stockagent.com",
+    packages=find_packages(),
+    install_requires=[
+        "Flask==3.0.0",
+        "requests==2.31.0",
+        "pandas==2.0.0",
+        "numpy==1.24.0",
+        "beautifulsoup4==4.12.0",
+        "lxml==4.9.0",
+        "python-dotenv==1.0.0",
+        "gunicorn==21.0.0",
+        "scikit-learn==1.3.0",
+        "textblob==0.17.1",
+        "yfinance==0.2.32",
+    ],
+    python_requires=">=3.8",
+)
