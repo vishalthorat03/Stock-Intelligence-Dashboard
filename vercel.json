@@ -6,7 +6,7 @@
   },
   "functions": {
     "cmd/server/main.go": {
-      "runtime": "go1.x"
+      "runtime": "@vercel/go@3.2.3"
     }
   }
 }
