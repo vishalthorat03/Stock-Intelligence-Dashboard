@@ -25,7 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
     bindEvents();
     updateAuthUI();
     loadExchangeSetting();
-    refreshData(false);  // Load stored data only on init
+    loadCachedData();  // Show existing stored data immediately
+    triggerBackgroundRefresh().catch(() => {});  // Refresh in the background once initial UI is ready
     startAutoRefresh();
     addUserActivityListeners();
 });
@@ -33,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function startAutoRefresh() {
     autoRefreshTimer = setInterval(() => {
         if (!userActive && !isRefreshing) {
-            triggerBackgroundRefresh();  // Silent background refresh
+            triggerBackgroundRefresh().catch(() => {});  // Silent background refresh
         }
     }, REFRESH_INTERVAL_MS);
 }
@@ -75,9 +76,13 @@ function bindEvents() {
         exchangeSelect.addEventListener("change", async (event) => {
             currentExchange = event.target.value;
             try {
-                    await putJson(`${API_BASE_URL}/config/exchange`, { exchange: currentExchange });
+                await putJson(`${API_BASE_URL}/config/exchange`, { exchange: currentExchange });
+            } catch (error) {
+                console.warn("Failed to save exchange selection:", error);
+            }
+        });
     }
-    
+
     document.getElementById("login-btn").addEventListener("click", () => openAuthModal("login"));
     document.getElementById("signup-btn").addEventListener("click", () => openAuthModal("signup"));
     document.getElementById("forgot-btn").addEventListener("click", () => openAuthModal("forgot"));
@@ -124,26 +129,20 @@ async function manualRefresh() {
         setMessage("Refresh already in progress...", "info");
         return;
     }
-    setMessage("Starting market refresh...", "info");
+    setMessage("Refreshing market data...", "info");
+    await loadCachedData(false);
     await triggerBackgroundRefresh();
 }
 
-async function refreshData(showLoadingMessage = true) {
+async function loadCachedData(showLoadingMessage = true) {
     if (showLoadingMessage) {
-        setMessage("Loading market data...", "info");
+        setMessage("Loading cached market data...", "info");
     }
 
     try {
-        const health = await fetchJson(`${API_BASE_URL}/health`);
-        updateApiStatus(health.success);
-    } catch (error) {
-        updateApiStatus(false);
-    }
-
-    try {
-        const [topResult, refreshResult] = await Promise.all([
+        const [topResult] = await Promise.all([
             fetchJson(`${API_BASE_URL}/stocks/top?limit=10`),
-            fetchJson(`${API_BASE_URL}/stocks/refresh/status`),
+            fetchJson(`${API_BASE_URL}/stocks/refresh/status`).catch(() => null),
         ]);
 
         topStocks = Array.isArray(topResult.data) ? topResult.data : [];
@@ -171,6 +170,10 @@ async function refreshData(showLoadingMessage = true) {
         renderSelectedStock(null, error.message || "Failed to fetch data.");
         setMessage(error.message || "Failed to fetch data.", "error");
     }
+}
+
+async function refreshData(showLoadingMessage = true) {
+    return loadCachedData(showLoadingMessage);
 }
 
 async function triggerBackgroundRefresh() {
