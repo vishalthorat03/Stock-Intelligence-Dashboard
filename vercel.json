@@ -5,8 +5,14 @@
     }
   },
   "functions": {
-    "cmd/server/main.go": {
-      "runtime": "@vercel/go@3.2.3"
+    "api/index.go": {
+      "runtime": "@vercel/go@3.2.3",
+      "includeFiles": [
+        "frontend/**",
+        "src/**",
+        "data/**",
+        "config/**"
+      ]
     }
   }
 }
