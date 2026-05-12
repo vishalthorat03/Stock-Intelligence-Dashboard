@@ -3,5 +3,10 @@
     "env": {
       "GO111MODULE": "on"
     }
+  },
+  "functions": {
+    "cmd/server/main.go": {
+      "runtime": "go1.x"
+    }
   }
 }
