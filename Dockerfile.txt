@@ -1,0 +1,13 @@
+FROM golang:1.25
+
+WORKDIR /app
+
+COPY . .
+
+WORKDIR /app/backend
+
+RUN go build -o app .
+
+EXPOSE 5004
+
+CMD ["./app"]

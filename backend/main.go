@@ -95,7 +95,7 @@ func main() {
 	http.HandleFunc("/", serveFrontend)
 
 	// Minimal Vercel Fix #1
-	port := getEnv("PORT", "5004")
+	port := getEnv("PORT", getEnv("API_PORT", "5004"))
 
 	listener, err := getListenListener(port)
 	if err != nil {

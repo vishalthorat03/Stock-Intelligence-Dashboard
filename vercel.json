@@ -1,14 +1,7 @@
 {
-  "builds": [
-    {
-      "src": "backend/main.go",
-      "use": "@vercel/go"
+  "build": {
+    "env": {
+      "GO111MODULE": "on"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "backend/main.go"
-    }
-  ]
+  }
 }
