@@ -94,17 +94,22 @@ func main() {
 	http.HandleFunc("/api/score", scoreHandler)
 	http.HandleFunc("/", serveFrontend)
 
-	port := getEnv("API_PORT", "5004")
+	// Minimal Vercel Fix #1
+	port := getEnv("PORT", "5004")
+
 	listener, err := getListenListener(port)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Server failed to bind: %v\n", err)
 		os.Exit(1)
 	}
 
-	startRefreshScheduler()
+	// Minimal Vercel Fix #2
+	// Disabled scheduler for Vercel serverless runtime
+	// startRefreshScheduler()
 
 	fmt.Printf("Starting Go backend on %s\n", listener.Addr())
 	fmt.Printf("Serving frontend from %s\n", frontendPath)
+
 	if err := http.Serve(listener, nil); err != nil {
 		fmt.Fprintf(os.Stderr, "Server failed: %v\n", err)
 		os.Exit(1)
@@ -164,7 +169,7 @@ func getListenListener(port string) (net.Listener, error) {
 			}
 			candidate = strconv.Itoa(portNum + i)
 		}
-		addr := fmt.Sprintf("127.0.0.1:%s", candidate)
+		addr := fmt.Sprintf("0.0.0.0:%s", candidate)
 		listener, err := net.Listen("tcp", addr)
 		if err == nil {
 			return listener, nil
