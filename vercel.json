@@ -1,8 +1,12 @@
 {
   "framework": "go",
-  "build": {
-    "env": {
-      "GO111MODULE": "on"
+  "env": {
+    "GO111MODULE": "on"
+  },
+  "builds": [
+    {
+      "src": "main.go",
+      "use": "@vercel/go"
     }
-  }
+  ]
 }
