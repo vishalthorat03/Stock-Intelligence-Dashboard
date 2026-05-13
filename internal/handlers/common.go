@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -25,14 +26,24 @@ func (h *Handler) ServeFrontend(w http.ResponseWriter, r *http.Request) {
 	frontendPath := filepath.Join(utils.GetRootPath(), "frontend")
 	requestPath := filepath.Clean("/" + strings.TrimPrefix(r.URL.Path, "/"))
 
+	// Debug logging
+	if os.Getenv("DEBUG") == "1" {
+		fmt.Fprintf(os.Stderr, "Frontend Request: path=%s, frontend=%s\n", requestPath, frontendPath)
+	}
+
 	if requestPath == "/" {
-		http.ServeFile(w, r, filepath.Join(frontendPath, "index.html"))
-		return
+		filePath := filepath.Join(frontendPath, "index.html")
+		if _, err := os.Stat(filePath); err == nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			http.ServeFile(w, r, filePath)
+			return
+		}
 	}
 
 	assetPath := filepath.Join(frontendPath, strings.TrimPrefix(requestPath, "/"))
 	if rel, err := filepath.Rel(frontendPath, assetPath); err != nil || strings.HasPrefix(rel, "..") {
-		http.NotFound(w, r)
+		// If not found, try to serve index.html for SPA routing
+		http.ServeFile(w, r, filepath.Join(frontendPath, "index.html"))
 		return
 	}
 
@@ -42,6 +53,7 @@ func (h *Handler) ServeFrontend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// For SPA routing, serve index.html
 	http.ServeFile(w, r, filepath.Join(frontendPath, "index.html"))
 }
 

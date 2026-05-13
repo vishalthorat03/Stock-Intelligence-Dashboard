@@ -58,11 +58,16 @@ func GetListenListener(port string) (net.Listener, error) {
 }
 
 func GetRootPath() string {
-	// First check if VERCEL environment is set
-	if os.Getenv("VERCEL") == "1" || os.Getenv("VERCEL_ENV") != "" {
-		// On Vercel, files are in /var/task
-		if exists("/var/task/frontend") {
-			return "/var/task"
+	// First check for common Vercel paths
+	vercelPaths := []string{
+		"/var/task",
+		"/vercel/path0",
+		"/opt/render",
+	}
+
+	for _, vercelPath := range vercelPaths {
+		if exists(filepath.Join(vercelPath, "frontend")) {
+			return vercelPath
 		}
 	}
 

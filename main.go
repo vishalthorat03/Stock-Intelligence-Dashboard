@@ -29,6 +29,8 @@ func main() {
 	http.HandleFunc("/", handler.ServeFrontend)
 
 	port := utils.GetEnv("PORT", utils.GetEnv("API_PORT", "5004"))
+	rootPath := utils.GetRootPath()
+	frontendPath := rootPath + "/frontend"
 
 	listener, err := utils.GetListenListener(port)
 	if err != nil {
@@ -37,10 +39,17 @@ func main() {
 	}
 
 	fmt.Printf("Starting Go backend on %s\n", listener.Addr())
-	fmt.Printf("Serving frontend from %s\n", utils.GetRootPath()+"/frontend")
+	fmt.Printf("Root path: %s\n", rootPath)
+	fmt.Printf("Serving frontend from %s\n", frontendPath)
+	fmt.Printf("Frontend directory exists: %v\n", dirExists(frontendPath))
 
 	if err := http.Serve(listener, nil); err != nil {
 		fmt.Fprintf(os.Stderr, "Server failed: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func dirExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.IsDir()
 }

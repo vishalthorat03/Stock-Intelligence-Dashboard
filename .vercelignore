@@ -1,0 +1,22 @@
+# Ignore git and version control
+.git
+.gitignore
+.gitattributes
+
+# Ignore development files
+.env.local
+.env.*.local
+.venv
+*.pyc
+__pycache__
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode
+.idea
+*.log
+
+# Keep frontend and other essential files
+!frontend/
+!frontend/**
